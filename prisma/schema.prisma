@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  discordWebhook   String?
+  telegramChatId   String?
+  emailAlerts      Boolean   @default(true)
+  dailyDigest      Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  monitors         Monitor[]
+}
+
+/// One row per normalized URL. Every monitor watching the same URL shares
+/// a single Target, so a page is rendered once per cycle no matter how many
+/// users watch it.
+model Target {
+  id            String    @id @default(cuid())
+  url           String    @unique
+  host          String
+  lastFetchedAt DateTime?
+  backoffUntil  DateTime?
+  failureStreak Int       @default(0)
+  monitors      Monitor[]
+  captures      Capture[]
+
+  @@index([host])
+}
+
+/// A raw page render (HTML + screenshot) shared by all monitors on a Target.
+model Capture {
+  id             String     @id @default(cuid())
+  targetId       String
+  target         Target     @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  fetchedAt      DateTime   @default(now())
+  httpStatus     Int?
+  outcome        Outcome
+  error          String?
+  htmlPath       String?
+  screenshotPath String?
+  snapshots      Snapshot[]
+
+  @@index([targetId, fetchedAt])
+}
+
+enum Outcome {
+  OK
+  ERROR
+  BLOCKED
+}
+
+enum MonitorStatus {
+  PENDING
+  OK
+  ERROR
+  BLOCKED
+}
+
+model Monitor {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetId         String
+  target           Target        @relation(fields: [targetId], references: [id])
+  name             String
+  intervalMinutes  Int
+  /// 0 (only big changes) .. 100 (any change)
+  sensitivity      Int           @default(50)
+  watchSelectors   String[]
+  ignoreSelectors  String[]
+  /// Noise filter toggles, see src/lib/noise.ts NoiseRules
+  noiseRules       Json
+  /// Line signatures learned to change on every load (auto noise)
+  volatileLines    String[]
+  /// Set when regions or rules change: the next check re-baselines without alerting
+  needsBaseline    Boolean       @default(false)
+  status           MonitorStatus @default(PENDING)
+  statusDetail     String?
+  paused           Boolean       @default(false)
+  nextCheckAt      DateTime      @default(now())
+  lastCheckedAt    DateTime?
+  lastChangedAt    DateTime?
+  createdAt        DateTime      @default(now())
+  snapshots        Snapshot[]
+  alerts           Alert[]
+
+  @@index([nextCheckAt, paused])
+  @@index([userId])
+}
+
+/// Stored only when the monitor's filtered content hash changes.
+model Snapshot {
+  id           String   @id @default(cuid())
+  monitorId    String
+  monitor      Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  captureId    String
+  capture      Capture  @relation(fields: [captureId], references: [id])
+  contentHash  String
+  text         String
+  addedLines   Int      @default(0)
+  removedLines Int      @default(0)
+  previousId   String?
+  /// Outbox flag: an alert still has to be enqueued for this snapshot
+  alertPending Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  alerts       Alert[]
+
+  @@index([monitorId, createdAt])
+  @@index([alertPending])
+}
+
+enum AlertStatus {
+  SENT
+  QUEUED_DIGEST
+  SKIPPED
+  FAILED
+}
+
+model Alert {
+  id         String      @id @default(cuid())
+  monitorId  String
+  monitor    Monitor     @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  snapshotId String
+  snapshot   Snapshot    @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  channel    String
+  /// monitorId + contentHash + channel: the same content never alerts twice
+  dedupeKey  String      @unique
+  status     AlertStatus
+  detail     String?
+  createdAt  DateTime    @default(now())
+
+  @@index([status, channel])
+}

@@ -1,0 +1,327 @@
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Header over the hero: solid enough to stay legible ---------- */
+
+.landing .site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Opaque rather than backdrop-blurred: a blur over the animated star re-renders every frame. */
+  background: rgba(6, 6, 8, 0.9);
+}
+
+.landing .site-nav {
+  color: #c9c9cf;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  --star-y: 50%;
+  position: relative;
+  height: max(660px, 100svh);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.star-canvas {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.star-canvas[data-ready="true"] {
+  opacity: 1;
+}
+
+.hero-card {
+  position: absolute;
+  z-index: 3;
+  top: var(--star-y);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, calc(100% - 32px));
+  padding: 18px 18px 16px;
+  display: grid;
+  gap: 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(40, 40, 46, 0.9), rgba(17, 17, 21, 0.93));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-card-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero-card-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.hero-card-input:focus-within {
+  border-color: var(--accent-ring);
+  box-shadow: 0 0 0 3px rgba(27, 70, 255, 0.18);
+}
+
+.hero-card-input svg.globe {
+  flex: none;
+  color: var(--muted);
+}
+
+.hero-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 14px;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  padding: 8px 0;
+}
+
+.hero-input::placeholder {
+  color: #8d8d95;
+}
+
+.hero-input:focus {
+  outline: none;
+}
+
+.hero-card .btn-primary {
+  padding: 9px 14px;
+  box-shadow: none;
+  border-radius: 7px;
+}
+
+.hero-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-bottom {
+  position: absolute;
+  z-index: 3;
+  left: calc(var(--gutter) + 22px);
+  right: calc(var(--gutter) + 22px);
+  bottom: clamp(28px, 6vh, 64px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.hero-left {
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+}
+
+.hero-title {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(28px, 2.9vw, 42px);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.hero-title span {
+  color: var(--fg-dim);
+}
+
+.hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.hero-copy {
+  margin: 0;
+  max-width: 340px;
+  color: var(--fg-dim);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    --star-y: 38%;
+    height: max(720px, 100svh);
+  }
+  .hero-bottom {
+    left: 16px;
+    right: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .hero-copy {
+    display: none;
+  }
+}
+
+/* ---------- Below the fold ---------- */
+
+.section {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid var(--line);
+}
+
+.section-head {
+  padding: 64px calc(var(--gutter) + 22px) 36px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.section-title {
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 34px);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 var(--gutter);
+  border-top: 1px solid var(--line);
+}
+
+.feature {
+  padding: 28px 22px 34px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  min-height: 210px;
+  transition: background 0.25s;
+}
+
+.feature:nth-child(4n + 1) {
+  border-left: 0;
+}
+
+.feature:nth-child(4n) {
+  border-right: 0;
+}
+
+.feature:hover {
+  background: radial-gradient(circle at 20% 0%, rgba(27, 70, 255, 0.12), transparent 70%);
+}
+
+.feature .idx {
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: 0.2em;
+}
+
+.feature h3 {
+  margin: 14px 0 10px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.feature p {
+  margin: 0;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+
+@media (max-width: 1000px) {
+  .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feature:nth-child(4n) { border-right: 1px solid var(--line); }
+  .feature:nth-child(2n) { border-right: 0; }
+}
+
+@media (max-width: 560px) {
+  .feature-grid { grid-template-columns: minmax(0, 1fr); margin: 0 16px; }
+  .feature { border-right: 0 !important; }
+}
+
+.qa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 var(--gutter);
+  border-top: 1px solid var(--line);
+}
+
+.qa {
+  padding: 30px 26px 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.qa:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+
+.qa h3 {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+.qa h3 span {
+  color: var(--amber);
+  margin-right: 10px;
+}
+
+.qa p, .qa li {
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+
+.qa ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 760px) {
+  .qa-grid { grid-template-columns: minmax(0, 1fr); margin: 0 16px; }
+  .qa:nth-child(odd) { border-right: 0; }
+}
+
+.site-footer {
+  position: relative;
+  z-index: 2;
+  padding: 36px calc(var(--gutter) + 22px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Middle grid lines frame the hero only; below it the feature grid draws its own rules. */
+.landing .grid-lines span:nth-child(2),
+.landing .grid-lines span:nth-child(3) {
+  bottom: auto;
+  height: max(660px, 100svh);
+}
